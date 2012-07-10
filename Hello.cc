@@ -18,19 +18,28 @@ namespace  {
     {
         CallInst const * call = dyn_cast<CallInst const>(&instr);
         if (call != NULL) {
-            return "call: " + call->getCalledFunction()->getName().str();
+	    std::stringstream ss;
+	    std::string callee = call->getCalledFunction()->getName().str();
+	    std::stringstream csss; csss << &instr; std::string cs = csss.str();
+	    std::stringstream rsss; rsss << "r" << &instr; std::string rs = rsss.str();
+	    std::string es = "e." + callee;
+	    std::string xs = "x." + callee;
+	    std::string sym = "(call " + callee + ")";
+	    ss << "Delta_c: {(" << cs << ", " << sym << ", " << es << ")}\n";
+	    ss << "Delta_r: {(" << xs << ", " << cs << ", " << sym << ", " << rs << ")}\n";
+	    ss << "Delta_i: {(" << rs << ", *, " << &next << ")}\n";
+            return ss.str();
         }
         else {
+	    std::stringstream ss;
+	    ss << "Delta_i: {(" << &instr << ", (" << instr.getOpcodeName();
             MDNode const * md = instr.getDebugLoc().getAsMDNode(instr.getContext());
             if (md != NULL) {
                 DILocation loc(md);
-                std::stringstream ss;
-                ss << loc.getFilename().str() << ":" << loc.getLineNumber() << ":" << loc.getColumnNumber();
-                return instr.getOpcodeName() + std::string(" [") + ss.str() + "]";
+                ss << " [" << loc.getFilename().str() << ":" << loc.getLineNumber() << ":" << loc.getColumnNumber() << "]";
             }
-            else {
-                return instr.getOpcodeName();
-            }
+	    ss << "), " << &next << ")}\n";
+	    return ss.str();
         }
     }
 
@@ -45,18 +54,28 @@ namespace  {
     block_label(BasicBlock const & block)
     {
         std::string out;
-        for(BasicBlock::const_iterator
-		instr = block.begin(),
-		next = next_iter(block.begin()),
-		end = block.end();
+	BasicBlock::const_iterator
+	    instr = block.begin(),
+	    next = next_iter(block.begin()),
+	    end = block.end();
+        for(;
             next != end;
 	    ++instr, ++next)
         {
-	    
+	    std::cout << &*instr << "->" << &*next << "\n";
             out += instr_label(*instr, *next);
             out += "\n";
         }
+	assert(block.getTerminator() == &*instr);
         return out;
+    }
+
+
+    Instruction const & firstInstr(Function const & f)
+    {
+	BasicBlock const & first = f.getEntryBlock();
+	BasicBlock::const_iterator instr = first.begin();
+	return *instr;
     }
     
 
@@ -66,23 +85,30 @@ namespace  {
         Hello() : FunctionPass(ID) {}
 
         virtual bool runOnFunction(Function &f) {
-            std::cout << "*********\n";
-            std::cout << f.getName().str() << "\n";
+            //std::cerr << "*********\n";
+            //std::cerr << f.getName().str() << "\n";
+
+	    std::cerr << "Delta_i: {(e." << f.getName().str() << ", *, " << &firstInstr(f) << ")}\n";
 
             for(Function::const_iterator block = f.begin(), end = f.end();
                 block != end; ++block)
             {
-                std::cout << "------\n";
+                //std::cerr << "------\n";
                 std::string const & label = block_label(*block);
-                std::cout << label << "\n";
+                std::cerr << label << "\n";
 
                 TerminatorInst const * term = block->getTerminator();
 
                 for(unsigned succ = 0, end = term->getNumSuccessors();
                     succ != end; ++succ)
                 {
-                    std::cout << &*block << " --> " << term->getSuccessor(succ) << "\n";
+		    std::cerr << "Delta_i: {(" << term << ", *, " << term->getSuccessor(succ) << ")}\n";
                 }
+
+		if (term->getNumSuccessors() == 0) {
+		    assert(term->getOpcodeName() == std::string("ret"));
+		    std::cerr << "Delta_i: {(" << term << ", *, " << "x." << f.getName().str() << ")}\n";
+		}
             }
 
             return false;
