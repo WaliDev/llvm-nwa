@@ -67,7 +67,7 @@ namespace  {
             next != end;
 	    ++instr, ++next)
         {
-	    std::cout << &*instr << "->" << &*next << "\n";
+	    std::cout << &*instr << "->" << &*next << ":" << instr->getOpcodeName() << "\n";
             out += instr_label(*instr, *next);
             out += "\n";
         }
@@ -80,6 +80,13 @@ namespace  {
     {
 	BasicBlock const & first = f.getEntryBlock();
 	BasicBlock::const_iterator instr = first.begin();
+	return *instr;
+    }
+    
+    Instruction const & successorInst(TerminatorInst const & inst, unsigned succ)
+    {
+	BasicBlock * blk = inst.getSuccessor(succ);
+	BasicBlock::const_iterator instr = blk->begin();
 	return *instr;
     }
     
@@ -107,7 +114,7 @@ namespace  {
                 for(unsigned succ = 0, end = term->getNumSuccessors();
                     succ != end; ++succ)
                 {
-		    std::cerr << "Delta_i: {(" << term << ", *, " << term->getSuccessor(succ) << ")}\n";
+		    std::cerr << "Delta_i: {(" << term << ", *, " << &successorInst(*term, succ) << ")}\n";
                 }
 
 		if (term->getNumSuccessors() == 0) {
