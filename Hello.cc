@@ -1,3 +1,5 @@
+#include <boost/algorithm/string/predicate.hpp>
+
 #include "llvm/Pass.h"
 #include "llvm/Support/DebugLoc.h"
 #include "llvm/Analysis/DebugInfo.h"
@@ -20,15 +22,18 @@ namespace  {
         if (call != NULL) {
 	    std::stringstream ss;
 	    std::string callee = call->getCalledFunction()->getName().str();
-	    std::stringstream csss; csss << &instr; std::string cs = csss.str();
-	    std::stringstream rsss; rsss << "r" << &instr; std::string rs = rsss.str();
-	    std::string es = "e." + callee;
-	    std::string xs = "x." + callee;
-	    std::string sym = "(call " + callee + ")";
-	    ss << "Delta_c: {(" << cs << ", " << sym << ", " << es << ")}\n";
-	    ss << "Delta_r: {(" << xs << ", " << cs << ", " << sym << ", " << rs << ")}\n";
-	    ss << "Delta_i: {(" << rs << ", *, " << &next << ")}\n";
-            return ss.str();
+	    if (!boost::starts_with(callee, "llvm.dbg")) {
+		std::stringstream csss; csss << &instr; std::string cs = csss.str();
+		std::stringstream rsss; rsss << "r" << &instr; std::string rs = rsss.str();
+		std::string es = "e." + callee;
+		std::string xs = "x." + callee;
+		ss << "Delta_c: {(" << cs << ", call, " << es << ")}\n";
+		ss << "Delta_r: {(" << xs << ", " << cs << ", ret, " << rs << ")}\n";
+		ss << "Delta_i: {(" << rs << ", *, " << &next << ")}\n";
+		return ss.str();
+	    }
+	    ss << "Delta_i: (" << &instr << ", *, " << &next << ")\n";
+	    return ss.str();
         }
         else {
 	    std::stringstream ss;
