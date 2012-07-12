@@ -21,7 +21,8 @@ namespace  {
         CallInst const * call = dyn_cast<CallInst const>(&instr);
         if (call != NULL) {
 	    std::stringstream ss;
-	    std::string callee = call->getCalledFunction()->getName().str();
+	    Function * func = call->getCalledFunction();
+	    std::string callee =func->getName().str();
 	    if (!boost::starts_with(callee, "llvm.dbg")) {
 		std::stringstream csss; csss << &instr; std::string cs = csss.str();
 		std::stringstream rsss; rsss << "r" << &instr; std::string rs = rsss.str();
@@ -97,6 +98,11 @@ namespace  {
         Hello() : FunctionPass(ID) {}
 
         virtual bool runOnFunction(Function &f) {
+	    static bool first = true;
+	    if (first) {
+		first = false;
+		std::cerr << "Q0: e.main\nQf: x.main\n";
+	    }
             //std::cerr << "*********\n";
             //std::cerr << f.getName().str() << "\n";
 
