@@ -1,0 +1,8 @@
+#!/bin/bash
+
+export PATH="$HOME/wali-trunk/bin64:$PATH"
+export LD_LIBRARY_PATH="$HOME/wali-trunk/lib64:$LD_LIBRARY_PATH"
+
+nwa-print-dot.exe -o $(basename $1 .nwa).dot $1
+dot -Tpng -o $(basename $1 .nwa).png $(basename $1 .nwa).dot
+eog $(basename $1 .nwa).png

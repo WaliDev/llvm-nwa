@@ -1,0 +1,3 @@
+set +x
+clang -emit-llvm -g $1 -c
+opt-3.0 -load ./libnwa-output.so -hello $(basename $1 .c).o > /dev/null 2> $(basename $1 .c).nwa
