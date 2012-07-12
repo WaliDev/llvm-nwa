@@ -5,4 +5,4 @@ e.AppendUnique(CPPDEFINES={"__STDC_LIMIT_MACROS": 1,
                            "__STDC_CONSTANT_MACROS": 1})
 e.AppendUnique(CCFLAGS=['-g'])
 
-e.SharedLibrary('hello', 'Hello.cc')
+e.SharedLibrary('nwa-output', 'nwa-output.cc')
