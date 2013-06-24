@@ -1,12 +1,16 @@
 #include <stdio.h>
 
-int foo(int x) {
-    return x;
+void foo() {
 }
 
 int main(int argc, char ** argv) {
-  if (argc < 0) {
-    return foo(argc);
+  if (argc > 1) {
+    foo();
+  }
+  else if (argc > 2) {
+    foo();
+  }
+  else {
   }
   return 0;
 }
