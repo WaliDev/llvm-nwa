@@ -3,9 +3,9 @@
 #include "llvm/Pass.h"
 #include "llvm/Support/DebugLoc.h"
 #include "llvm/DebugInfo.h"
-#include "llvm/Function.h"
-#include "llvm/InstrTypes.h"
-#include "llvm/Instructions.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/InstrTypes.h"
+#include "llvm/IR/Instructions.h"
 #include "llvm/Support/raw_ostream.h"
 
 #include <sstream>
